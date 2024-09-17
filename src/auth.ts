@@ -40,3 +40,5 @@ export const { handlers, signIn, signOut, auth } = NextAuth({
     }),
   ],
 })
+
+//class constructor //getter and setter//cretae constructor to copy the object

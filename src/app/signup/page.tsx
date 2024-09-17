@@ -8,10 +8,41 @@ import {
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import { hash } from 'bcryptjs';
+import { User } from "@/models/userModel";
+import { redirect } from 'next/navigation';
 
 import React from "react";
+import { connectToDatabase } from "@/lib/utils";
 
 const Page = () => {
+  const signUp = async (formData: FormData) => {
+    "use server";
+
+    const name = formData.get("name") as string | undefined;
+    const email = formData.get("email") as string | undefined;
+    const password = formData.get("password") as string | undefined;
+
+    if (!email || !password || !name)
+      throw new Error("Please provide all fields");
+
+    //Connect to Database:
+     await connectToDatabase()
+
+    const user = await User.findOne({ email });
+
+    if (user) throw new Error("User already exists");
+
+    const hashedPassword = await hash(password, 10);
+
+    await User.create({
+      name,
+      email,
+      password: hashedPassword
+    });
+
+    redirect('/login');
+  };
   return (
     <div className="flex justify-center  items-center h-dvh">
       <Card>
@@ -30,9 +61,9 @@ const Page = () => {
         </CardContent>
         <CardFooter className="flex flex-col gap-4">
           <span> Or </span>
-          <form action=" " className="flex flex-col gap-2">
+          <form action={signUp} className="flex flex-col gap-2">
             <Button type="submit">Login with Google</Button>
-            <Link href="/login" className="mt-2" > Dont have an account Login </Link>
+            <Link href="/login" className="mt-2" > Dont have an account? Login </Link>
           </form>
         </CardFooter>
       </Card>
